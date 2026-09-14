@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>환경 사건 연도 하이로우</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1d3557;
+    --ink-soft:#5a6472;
+    --green:#2f6f4e;
+    --green-dark:#1f4d38;
+    --orange:#e8622c;
+    --orange-dark:#c94f1e;
+    --yellow:#f0c14b;
+    --paper:#f2ede1;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  [hidden]{display:none !important;}
+  body{
+    font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    margin:0;
+    padding:32px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,0.035) 0 2px, transparent 2px 26px),
+      var(--ink);
+  }
+  .wrap{
+    max-width:640px;margin:0 auto;
+    background-color:var(--paper);
+    background-image:repeating-linear-gradient(0deg, rgba(29,53,87,0.028) 0 1px, transparent 1px 3px);
+    border:3px solid var(--ink);
+    border-radius:6px;
+    padding:26px 18px 30px;
+    box-shadow:10px 10px 0 var(--orange), 0 25px 60px rgba(0,0,0,0.4);
+  }
+
+  .poster-title{
+    display:flex;justify-content:center;gap:6px;flex-wrap:wrap;
+    margin:0 0 10px;padding:0;list-style:none;
+  }
+  .poster-title span{
+    font-family:'Black Han Sans',sans-serif;
+    font-size:clamp(24px,7.8vw,42px);
+    line-height:1.15;
+    padding:5px 13px;color:#fff;display:inline-block;
+  }
+  .poster-title span:nth-child(1){background:var(--green);transform:rotate(-2deg);}
+  .poster-title span:nth-child(2){background:var(--orange);transform:rotate(1.5deg);}
+  .poster-title span:nth-child(3){background:var(--ink);transform:rotate(-1deg);}
+  .poster-title span:nth-child(4){background:var(--yellow);color:var(--ink);transform:rotate(2deg);}
+
+  header{text-align:center;margin-bottom:16px;}
+  .badge-circle{
+    width:56px;height:56px;
+    margin:0 auto 10px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:26px;
+    background:var(--green);
+    box-shadow:0 0 0 3px #fff, 0 0 0 5px var(--ink);
+  }
+  header p{
+    margin:0;
+    color:var(--ink-soft);
+    font-size:clamp(12.5px,3.3vw,14.5px);
+    font-weight:500;
+  }
+
+  .note{
+    position:relative;
+    background:var(--card);
+    border:2.5px solid var(--ink);
+    border-radius:8px;
+    padding:12px 14px;
+    font-size:12.5px;
+    color:#3a4048;
+    line-height:1.55;
+    margin:16px 0;
+    box-shadow:4px 4px 0 var(--yellow);
+  }
+  .note b{color:var(--green);}
+
+  .stats{
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
+    margin:16px 0 18px;
+  }
+  .stat-box{
+    background:var(--card);
+    border:2.5px solid var(--ink);
+    border-radius:999px;
+    padding:6px 14px 6px 6px;
+    font-size:12.5px;
+    font-weight:800;
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .stat-box .badge{
+    width:24px;height:24px;border-radius:50%;
+    background:var(--orange);color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:900;font-variant-numeric:tabular-nums;
+    transition:transform 0.25s;
+  }
+  .stat-box .badge.bump{animation:bump 0.4s ease;}
+  @keyframes bump{0%{transform:scale(1);}40%{transform:scale(1.35);background:var(--yellow);}100%{transform:scale(1);}}
+
+  #loading{
+    text-align:center;
+    padding:70px 20px;
+    color:var(--ink-soft);
+    font-weight:700;
+    font-size:15px;
+  }
+  #loading .spinner{
+    width:38px;height:38px;margin:0 auto 16px;
+    border:4px solid #e2dcc9;
+    border-top-color:var(--green);
+    border-radius:50%;
+    animation:spin 0.9s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .prompt-banner{
+    position:relative;
+    text-align:center;
+    background:var(--ink);
+    color:#fff;
+    border-radius:5px;
+    padding:13px 16px;
+    font-weight:800;
+    font-size:clamp(13.5px,3.8vw,15.5px);
+    margin-bottom:18px;
+    line-height:1.45;
+    transform:rotate(-0.5deg);
+    box-shadow:5px 5px 0 var(--orange);
+  }
+  .prompt-banner span{color:var(--yellow);}
+
+  .duel{
+    display:flex;
+    align-items:stretch;
+    gap:12px;
+    animation:riseIn 0.35s ease;
+  }
+  @keyframes riseIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  .vs{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    width:24px;
+    font-family:'Black Han Sans',sans-serif;
+    font-size:12px;
+    color:var(--ink);
+  }
+  .ecard{
+    flex:1;
+    min-width:0;
+    background:var(--card);
+    border:2.5px solid var(--ink);
+    border-radius:6px;
+    padding:0 0 12px;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    transition:box-shadow 0.3s, transform 0.3s, opacity 0.3s;
+  }
+  .ecard:nth-of-type(1){transform:rotate(-1deg);box-shadow:5px 5px 0 var(--green);}
+  .ecard:nth-of-type(2){transform:rotate(1deg);box-shadow:5px 5px 0 var(--yellow);}
+  .ecard.win{box-shadow:5px 5px 0 var(--green);transform:rotate(0deg) translateY(-2px);}
+  .ecard.lose{opacity:0.55;box-shadow:5px 5px 0 #cfc9b8;transform:rotate(0deg);}
+  .ecard .thumb{
+    position:relative;
+    width:100%;
+    aspect-ratio:4/3;
+    background:#e7e1cf;
+    overflow:hidden;
+    border-bottom:2.5px solid var(--ink);
+  }
+  .ecard .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .ecard .thumb.none{display:flex;align-items:center;justify-content:center;font-size:32px;}
+  .ecard .body{padding:10px 11px 0;display:flex;flex-direction:column;gap:6px;flex-grow:1;}
+  .subj-badge{
+    align-self:flex-start;
+    font-size:10px;
+    font-weight:800;
+    padding:3px 9px;
+    border-radius:3px;
+    background:var(--yellow);
+    color:var(--ink);
+    letter-spacing:0.2px;
+  }
+  .ecard .ename{
+    font-size:clamp(13px,3.8vw,14.5px);
+    font-weight:800;
+    color:var(--ink);
+    line-height:1.35;
+    min-height:2.5em;
+  }
+  .evalue-wrap{margin:9px 11px 0;perspective:600px;}
+  .evalue{
+    text-align:center;
+    background:#f7f3e8;
+    border:2px solid var(--ink);
+    border-radius:6px;
+    padding:10px 4px;
+    font-size:clamp(19px,6vw,25px);
+    font-weight:900;
+    color:var(--orange);
+    animation:flipIn 0.4s ease;
+  }
+  @keyframes flipIn{from{transform:rotateX(90deg);opacity:0.2;}to{transform:rotateX(0);opacity:1;}}
+  .evalue.unknown{
+    color:var(--ink);
+    font-size:clamp(24px,7vw,30px);
+    animation:pulseQ 1.6s ease-in-out infinite;
+  }
+  @keyframes pulseQ{0%,100%{opacity:0.45;}50%{opacity:1;}}
+
+  .guess-buttons{
+    display:flex;
+    gap:10px;
+    margin-top:20px;
+  }
+  .guess-buttons button{
+    flex:1;
+    padding:14px 8px;
+    border:2.5px solid var(--ink);
+    border-radius:8px;
+    font-family:inherit;
+    font-size:clamp(13px,3.8vw,15px);
+    font-weight:800;
+    cursor:pointer;
+    color:#fff;
+    box-shadow:4px 4px 0 var(--ink);
+    transition:transform 0.1s, box-shadow 0.1s;
+  }
+  .guess-buttons button:active:not(:disabled){transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink);}
+  .guess-buttons button:disabled{opacity:0.4;cursor:default;}
+  #btnLater{background:var(--green);}
+  #btnEarlier{background:var(--orange);}
+
+  .result-panel{
+    margin-top:18px;
+    background:var(--card);
+    border:2.5px solid var(--ink);
+    border-radius:6px;
+    padding:14px 15px;
+    box-shadow:5px 5px 0 var(--green);
+    animation:riseIn 0.3s ease;
+  }
+  .result-panel.bad{box-shadow:5px 5px 0 var(--orange);}
+  .result-msg{
+    font-weight:900;
+    font-size:15px;
+    margin-bottom:8px;
+    display:flex;align-items:center;gap:6px;
+  }
+  .result-msg.ok{color:var(--green);}
+  .result-msg.bad{color:var(--orange-dark);}
+  .guess-feedback{
+    display:inline-block;
+    font-size:12px;
+    font-weight:800;
+    padding:5px 12px;
+    border-radius:4px;
+    border:2px solid var(--ink);
+    margin-bottom:10px;
+  }
+  .guess-feedback.ok{background:#e6f2ec;color:var(--green);}
+  .guess-feedback.bad{background:#fdece3;color:var(--orange-dark);}
+  .guess-feedback b{font-weight:900;}
+  .event-brief{
+    font-size:12.5px;
+    color:#4a5058;
+    line-height:1.55;
+    margin-bottom:6px;
+  }
+  .event-brief b{color:var(--ink);}
+  .tie-note{
+    display:inline-block;
+    font-size:12px;
+    font-weight:800;
+    color:var(--ink);
+    background:var(--yellow);
+    padding:4px 11px;
+    border-radius:4px;
+    margin-bottom:9px;
+  }
+  .result-links{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:4px;
+  }
+  .result-links a{
+    font-size:11.5px;
+    font-weight:700;
+    color:var(--ink);
+    text-decoration:none;
+    background:#eee8d8;
+    padding:5px 12px;
+    border-radius:20px;
+    border:1.5px solid var(--ink);
+    transition:background 0.15s;
+  }
+  .result-links a:hover{background:var(--yellow);}
+
+  .action-row{
+    display:flex;
+    gap:10px;
+    margin-top:16px;
+    flex-wrap:wrap;
+  }
+  .action-row button{
+    flex:1;
+    min-width:130px;
+    padding:12px 10px;
+    border-radius:30px;
+    border:2.5px solid var(--ink);
+    font-family:inherit;
+    font-size:13.5px;
+    font-weight:800;
+    cursor:pointer;
+    transition:transform 0.15s;
+  }
+  .action-row button:active{transform:scale(0.97);}
+  #btnNext{background:var(--green);color:#fff;box-shadow:3px 3px 0 var(--ink);}
+  #btnCashout{background:#fff;color:var(--ink);}
+  #btnShowEnd{background:var(--ink);color:#fff;box-shadow:3px 3px 0 var(--orange);}
+
+  .overlay{
+    position:fixed;inset:0;
+    background:rgba(29,53,87,0.55);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:50;
+    animation:fadeIn 0.25s ease;
+  }
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  .end-box{
+    position:relative;
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:10px;
+    padding:34px 26px 28px;
+    text-align:center;
+    max-width:340px;
+    box-shadow:8px 8px 0 var(--orange);
+    animation:popIn 0.35s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes popIn{from{transform:scale(0.75);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .end-box .icon{font-size:48px;margin-bottom:8px;animation:bounce 0.6s ease;}
+  @keyframes bounce{0%{transform:translateY(-14px);opacity:0;}60%{transform:translateY(4px);}100%{transform:translateY(0);opacity:1;}}
+  .end-box h2{margin:0 0 8px;color:var(--ink);font-size:21px;font-weight:900;}
+  .end-box .rank{
+    font-size:13px;font-weight:800;color:#fff;
+    background:var(--ink);
+    display:inline-block;padding:6px 16px;border-radius:20px;margin-bottom:14px;
+  }
+  .end-box p{margin:0 0 22px;color:var(--ink-soft);font-size:14px;line-height:1.55;}
+  #restartBtn{
+    background:var(--green);
+    color:#fff;
+    border:2.5px solid var(--ink);
+    padding:12px 28px;
+    border-radius:30px;
+    font-size:15px;
+    font-weight:800;
+    cursor:pointer;
+    font-family:inherit;
+    box-shadow:4px 4px 0 var(--ink);
+    transition:transform 0.15s;
+  }
+  #restartBtn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink);}
+
+  @media (max-width:400px){
+    .duel{flex-direction:column;}
+    .vs{width:auto;padding:2px 0;}
+    .ecard .ename{min-height:0;}
+  }
+
+  .start-screen{
+    display:flex;
+    flex-direction:column;
+    min-height:82vh;
+  }
+  .hero-banner{
+    position:relative;
+    border:2.5px solid var(--ink);
+    border-radius:10px;
+    overflow:hidden;
+    box-shadow:5px 5px 0 var(--yellow);
+    line-height:0;
+    margin-bottom:20px;
+  }
+  .hero-banner svg{display:block;width:100%;height:auto;}
+  .realstamp{
+    position:absolute;top:10px;right:10px;z-index:2;
+    background:var(--orange);color:#fff;font-family:'Black Han Sans',sans-serif;
+    font-size:13px;padding:8px 0;width:56px;height:56px;border-radius:50%;
+    border:2px solid #fff;transform:rotate(12deg);
+    box-shadow:2px 2px 0 var(--ink);
+    text-align:center;line-height:1.2;
+  }
+  .best-teaser{
+    display:inline-block;
+    background:var(--yellow);color:var(--ink);
+    font-weight:800;font-size:13px;
+    padding:7px 16px;border-radius:20px;
+    border:2px solid var(--ink);
+    margin:2px 0 14px;
+    transform:rotate(-1deg);
+  }
+  .best-teaser b{font-size:16px;font-variant-numeric:tabular-nums;}
+  @keyframes ctaPulse{0%,100%{box-shadow:5px 5px 0 var(--ink);}50%{box-shadow:8px 8px 0 var(--ink);}}
+  .start-main{
+    flex:0 0 auto;
+    text-align:center;
+  }
+  .start-main .badge-circle{width:66px;height:66px;font-size:30px;}
+  .start-main > p{margin:0 0 16px;color:var(--ink-soft);font-size:clamp(12.5px,3.3vw,14.5px);font-weight:500;}
+  #btnStart{
+    display:block;
+    width:100%;
+    max-width:320px;
+    margin:20px auto 0;
+    padding:15px 20px;
+    border:2.5px solid var(--ink);
+    border-radius:10px;
+    font-family:inherit;
+    font-size:clamp(15px,4.2vw,17px);
+    font-weight:900;
+    color:#fff;
+    cursor:pointer;
+    background:var(--green);
+    box-shadow:5px 5px 0 var(--ink);
+    transition:transform 0.12s, box-shadow 0.12s;
+    animation:ctaPulse 1.8s ease-in-out infinite;
+  }
+  #btnStart:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--ink);}
+  .credit{
+    margin-top:auto;
+    padding-top:28px;
+    text-align:center;
+    font-size:11px;
+    color:var(--ink-soft);
+    line-height:1.7;
+  }
+  .credit a{color:var(--green);font-weight:700;text-decoration:none;}
+  .credit a:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+<div class="wrap start-screen" id="startScreen">
+  <div class="hero-banner">
+    <div class="realstamp">실화<br>사건</div>
+    <svg viewBox="0 0 400 140" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="400" height="140" fill="#f2ede1"/>
+      <circle cx="340" cy="34" r="20" fill="#f0c14b"/>
+      <path d="M0,98 Q90,78 190,96 T400,92 V140 H0 Z" fill="#2f6f4e"/>
+      <path d="M0,112 Q100,100 200,112 T400,108 V140 H0 Z" fill="#1d3557"/>
+      <g stroke="#1d3557" stroke-width="3" fill="none">
+        <line x1="55" y1="118" x2="55" y2="78"/>
+        <line x1="95" y1="122" x2="95" y2="80"/>
+        <line x1="135" y1="118" x2="135" y2="76"/>
+      </g>
+      <g stroke="#1d3557" stroke-width="2">
+        <rect x="30" y="58" width="50" height="24" rx="2" fill="#e8622c"/>
+        <rect x="72" y="60" width="46" height="24" rx="2" fill="#f2ede1"/>
+        <rect x="112" y="56" width="46" height="24" rx="2" fill="#f0c14b"/>
+      </g>
+    </svg>
+  </div>
+  <div class="start-main">
+    <div class="badge-circle">🌱</div>
+    <h1 class="poster-title"><span>환경</span><span>사건</span><span>연도</span><span>하이로우</span></h1>
+    <p>당신은 몇 연승까지 버틸 수 있나요? 한 번 틀리면 그대로 끝!</p>
+    <div class="best-teaser" id="bestTeaser" hidden>🔥 내 최고 기록 <b id="bestTeaserNum">0</b>연승 · 이번엔 넘어볼까요?</div>
+    <div class="note">왼쪽 사건의 실제 연도를 보고, 오른쪽 사건이 그보다 <b>나중(▲)</b>인지 <b>이전(▼)</b>인지 맞혀 보세요. 정답이면 계속 도전하거나 그만 저장할 수 있고, 틀리면 그 자리에서 게임이 끝나요.</div>
+    <button id="btnStart">🎮 게임 시작하기</button>
+  </div>
+  <div class="credit">
+    🌳 이 게임은 재단법인 숲과나눔이 운영하는 <a href="https://ecoarchive.org" target="_blank" rel="noopener">환경아카이브 풀숲</a>의 공개 데이터를 참고하여 만들었습니다.<br>
+    데이터 출처: <a href="https://github.com/ArchivelabEdu/ecoarchive-impact2026" target="_blank" rel="noopener">ecoarchive-impact2026</a>
+  </div>
+</div>
+
+<div class="wrap" id="playScreen" hidden>
+  <header>
+    <div class="badge-circle">🌱</div>
+    <h1 class="poster-title"><span>환경</span><span>사건</span><span>연도</span><span>하이로우</span></h1>
+    <p>사건 이름을 보고, 연도가 더 이를지 늦을지 맞혀 보세요</p>
+  </header>
+
+  <div class="note">왼쪽 사건의 실제 연도를 보고, 오른쪽 사건이 그보다 <b>나중(▲)</b>인지 <b>이전(▼)</b>인지 맞혀 보세요. 정답이면 계속 도전하거나 그만 저장할 수 있고, 틀리면 그 자리에서 게임이 끝나요.</div>
+
+  <div class="stats">
+    <div class="stat-box"><span class="badge" id="streakCount">0</span>연속 정답</div>
+    <div class="stat-box"><span class="badge" id="bestCount">0</span>최고 기록</div>
+  </div>
+
+  <div id="loading">
+    <div class="spinner"></div>
+    데이터를 불러오는 중...
+  </div>
+
+  <div id="game" hidden>
+    <div class="prompt-banner">오른쪽 사건은 왼쪽보다 <span>나중(▲)</span>일까요, <span>이전(▼)</span>일까요?</div>
+    <div class="duel">
+      <div class="ecard" id="cardA"></div>
+      <div class="vs">VS</div>
+      <div class="ecard" id="cardB"></div>
+    </div>
+    <div class="guess-buttons" id="guessButtons">
+      <button id="btnLater">▲ 더 나중</button>
+      <button id="btnEarlier">▼ 더 이전</button>
+    </div>
+    <div id="resultPanel" class="result-panel" hidden></div>
+    <div class="action-row" id="actionRow" hidden>
+      <button id="btnNext">다음 라운드 도전 →</button>
+      <button id="btnCashout">여기서 그만 저장</button>
+    </div>
+    <div class="action-row" id="failRow" hidden>
+      <button id="btnShowEnd">결과 확인하기 →</button>
+    </div>
+  </div>
+</div>
+
+<div id="endOverlay" class="overlay" hidden>
+  <div class="end-box">
+    <div class="icon" id="endIcon">🌿</div>
+    <h2 id="endTitle"></h2>
+    <div class="rank" id="endRank"></div>
+    <p id="endText"></p>
+    <button id="restartBtn">다시 도전</button>
+  </div>
+</div>
+
+<script>
+  const DATA_URL = "https://archivelabedu.github.io/ecoarchive-impact2026/data/cards.json";
+  const IMAGE_BASE = "https://archivelabedu.github.io/ecoarchive-impact2026/games/";
+  const BEST_KEY = "ecoYearHighLowBest";
+
+  let allEvents = [];
+  let streak = 0;
+  let best = 0;
+  let state = null;
+
+  const startScreenEl = document.getElementById('startScreen');
+  const playScreenEl = document.getElementById('playScreen');
+  const btnStart = document.getElementById('btnStart');
+  const loadingEl = document.getElementById('loading');
+  const gameEl = document.getElementById('game');
+  const cardAEl = document.getElementById('cardA');
+  const cardBEl = document.getElementById('cardB');
+  const guessButtonsEl = document.getElementById('guessButtons');
+  const btnLater = document.getElementById('btnLater');
+  const btnEarlier = document.getElementById('btnEarlier');
+  const resultPanelEl = document.getElementById('resultPanel');
+  const actionRowEl = document.getElementById('actionRow');
+  const failRowEl = document.getElementById('failRow');
+  const btnNext = document.getElementById('btnNext');
+  const btnCashout = document.getElementById('btnCashout');
+  const btnShowEnd = document.getElementById('btnShowEnd');
+  const streakCountEl = document.getElementById('streakCount');
+  const bestCountEl = document.getElementById('bestCount');
+  const endOverlay = document.getElementById('endOverlay');
+  const endIcon = document.getElementById('endIcon');
+  const endTitle = document.getElementById('endTitle');
+  const endRank = document.getElementById('endRank');
+  const endText = document.getElementById('endText');
+  const restartBtn = document.getElementById('restartBtn');
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+
+  function shuffle(arr){
+    for(let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function excerpt(s, n){
+    if(!s) return '';
+    s = String(s).trim();
+    return s.length > n ? s.slice(0, n).trim() + '…' : s;
+  }
+
+  function loadBest(){
+    try{
+      const v = parseInt(localStorage.getItem(BEST_KEY), 10);
+      return Number.isFinite(v) ? v : 0;
+    }catch(e){ return 0; }
+  }
+
+  function saveBest(v){
+    try{ localStorage.setItem(BEST_KEY, String(v)); }catch(e){}
+  }
+
+  (function showBestTeaser(){
+    const b = loadBest();
+    if(b > 0){
+      document.getElementById('bestTeaserNum').textContent = b;
+      document.getElementById('bestTeaser').hidden = false;
+    }
+  })();
+
+  function rankTitle(n){
+    if(n >= 15) return '환경사 마스터';
+    if(n >= 10) return '연표 달인';
+    if(n >= 6) return '사건 탐정';
+    if(n >= 3) return '기록 관찰자';
+    if(n >= 1) return '수습 탐정';
+    return '입문 탐정';
+  }
+
+  function bumpEl(el){
+    el.classList.remove('bump');
+    void el.offsetWidth;
+    el.classList.add('bump');
+  }
+
+  async function loadData(){
+    loadingEl.hidden = false;
+    gameEl.hidden = true;
+    try{
+      const res = await fetch(DATA_URL);
+      const data = await res.json();
+      allEvents = data.filter(d => d.type === 'event' && d.front && Number.isFinite(d.year));
+      if(allEvents.length < 2){
+        throw new Error('사건 데이터가 부족합니다.');
+      }
+      best = loadBest();
+      bestCountEl.textContent = best;
+      startGame();
+    }catch(err){
+      loadingEl.innerHTML = '데이터를 불러오지 못했습니다. 새로고침 해 주세요.';
+      console.error(err);
+    }
+  }
+
+  function startGame(){
+    streak = 0;
+    updateStreak();
+    loadingEl.hidden = true;
+    gameEl.hidden = false;
+    endOverlay.hidden = true;
+    nextRound();
+  }
+
+  function nextRound(){
+    const pool = shuffle([...allEvents]);
+    const a = pool[0];
+    const b = pool.find(ev => ev !== a && ev.id !== a.id && ev.year !== a.year)
+      || pool.find(ev => ev !== a && ev.id !== a.id)
+      || pool[1];
+
+    state = { a, b, revealed:false };
+
+    resultPanelEl.hidden = true;
+    resultPanelEl.className = 'result-panel';
+    resultPanelEl.innerHTML = '';
+    actionRowEl.hidden = true;
+    failRowEl.hidden = true;
+    guessButtonsEl.hidden = false;
+    btnLater.disabled = false;
+    btnEarlier.disabled = false;
+
+    renderCard(cardAEl, a, true, null);
+    renderCard(cardBEl, b, false, null);
+  }
+
+  function renderCard(el, ev, revealed, resultClass){
+    const imgSrc = ev.image ? IMAGE_BASE + ev.image : '';
+    const thumbHtml = imgSrc
+      ? '<div class="thumb"><img src="' + imgSrc + '" alt="' + escapeHtml(ev.front) + '" loading="lazy" onerror="this.parentElement.outerHTML=\'<div class=&quot;thumb none&quot;>🌍</div>\'"></div>'
+      : '<div class="thumb none">🌍</div>';
+    const valueHtml = revealed
+      ? '<div class="evalue">' + ev.year + '년</div>'
+      : '<div class="evalue unknown">?</div>';
+    el.className = 'ecard' + (resultClass ? ' ' + resultClass : '');
+    el.innerHTML =
+      thumbHtml +
+      '<div class="body">' +
+        (ev.subject ? '<span class="subj-badge">' + escapeHtml(ev.subject) + '</span>' : '') +
+        '<div class="ename">' + escapeHtml(ev.front) + '</div>' +
+      '</div>' +
+      '<div class="evalue-wrap">' + valueHtml + '</div>';
+  }
+
+  function updateStreak(){
+    streakCountEl.textContent = streak;
+  }
+
+  function onGuess(guess){
+    if(!state || state.revealed) return;
+    state.revealed = true;
+    btnLater.disabled = true;
+    btnEarlier.disabled = true;
+
+    const { a, b } = state;
+    const isTie = a.year === b.year;
+    const correct = isTie ? true : (guess === 'later' ? b.year > a.year : b.year < a.year);
+
+    renderCard(cardAEl, a, true, correct ? 'win' : null);
+    renderCard(cardBEl, b, true, correct ? 'win' : 'lose');
+
+    resultPanelEl.hidden = false;
+    guessButtonsEl.hidden = true;
+
+    const guessLabel = guess === 'later' ? '▲ 더 나중' : '▼ 더 이전';
+    const actualLabel = isTie ? '동점(같은 해)' : (b.year > a.year ? '▲ 더 나중' : '▼ 더 이전');
+    const feedbackLine = isTie
+      ? '<div class="guess-feedback ok">내 선택 <b>' + guessLabel + '</b> · 같은 해라 정답 인정!</div>'
+      : correct
+        ? '<div class="guess-feedback ok">내 선택 <b>' + guessLabel + '</b> → 정답!</div>'
+        : '<div class="guess-feedback bad">내 선택 <b>' + guessLabel + '</b> · 실제는 <b>' + actualLabel + '</b>이었어요</div>';
+
+    const descBlock =
+      '<div class="event-brief"><b>' + escapeHtml(a.front) + '</b>(' + a.year + '년) — ' + escapeHtml(excerpt(a.back, 70)) + '</div>' +
+      '<div class="event-brief"><b>' + escapeHtml(b.front) + '</b>(' + b.year + '년) — ' + escapeHtml(excerpt(b.back, 70)) + '</div>';
+    const linksBlock =
+      '<div class="result-links">' +
+        (a.url ? '<a href="' + a.url + '" target="_blank" rel="noopener">' + escapeHtml(a.front) + ' 보기 →</a>' : '') +
+        (b.url ? '<a href="' + b.url + '" target="_blank" rel="noopener">' + escapeHtml(b.front) + ' 보기 →</a>' : '') +
+      '</div>';
+
+    if(correct){
+      streak++;
+      bumpEl(streakCountEl);
+      if(streak > best){ best = streak; saveBest(best); bumpEl(bestCountEl); }
+      updateStreak();
+      bestCountEl.textContent = best;
+      resultPanelEl.className = 'result-panel';
+      resultPanelEl.innerHTML =
+        '<div class="result-msg ok">🎉 정답입니다! 연속 ' + streak + '번째 성공</div>' +
+        feedbackLine + descBlock + linksBlock;
+      actionRowEl.hidden = false;
+    }else{
+      resultPanelEl.className = 'result-panel bad';
+      resultPanelEl.innerHTML =
+        '<div class="result-msg bad">💥 아쉽습니다. 추리 실패!</div>' +
+        feedbackLine + descBlock + linksBlock;
+      failRowEl.hidden = false;
+    }
+  }
+
+  function showEnd(cashedOut){
+    endOverlay.hidden = false;
+    endIcon.textContent = cashedOut ? '💰' : '📉';
+    endTitle.textContent = cashedOut ? '저장 완료!' : '게임 종료';
+    endRank.textContent = rankTitle(streak) + ' · ' + streak + '연승';
+    endText.textContent = cashedOut
+      ? '연속 ' + streak + '번 정답으로 안전하게 마쳤어요. 최고 기록 ' + best + '연승에 도전해 보세요.'
+      : '연속 ' + streak + '번 성공 후 추리에 실패했어요. 최고 기록은 ' + best + '연승입니다.';
+  }
+
+  btnStart.addEventListener('click', () => {
+    startScreenEl.hidden = true;
+    playScreenEl.hidden = false;
+  });
+  btnLater.addEventListener('click', () => onGuess('later'));
+  btnEarlier.addEventListener('click', () => onGuess('earlier'));
+  btnNext.addEventListener('click', nextRound);
+  btnCashout.addEventListener('click', () => showEnd(true));
+  btnShowEnd.addEventListener('click', () => showEnd(false));
+  restartBtn.addEventListener('click', startGame);
+
+  loadData();
+</script>
+</body>
+</html>
